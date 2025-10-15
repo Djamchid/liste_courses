@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste de Courses</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #764ba2;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .input-section {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .input-section h3 {
+            color: #667eea;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: 'Arial', sans-serif;
+            box-sizing: border-box;
+        }
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+            display: none;
+        }
+        .controls.visible {
+            display: block;
+        }
+        .toggle-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        .toggle-btn:active {
+            transform: translateY(0);
+        }
+        #liste-container {
+            display: none;
+        }
+        #liste-container.visible {
+            display: block;
+        }
+        .rayon {
+            margin-bottom: 40px;
+            border-left: 6px solid #667eea;
+            padding-left: 25px;
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 10px;
+        }
+        .rayon h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-top: 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .rayon h2::before {
+            content: '🛒';
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+        .rayon ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .rayon li {
+            font-size: 1.8em;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .rayon li:hover {
+            transform: translateX(10px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .rayon li input[type="checkbox"] {
+            width: 30px;
+            height: 30px;
+            margin-right: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+            flex-shrink: 0;
+        }
+        .rayon li.checked {
+            opacity: 0.5;
+            text-decoration: line-through;
+            transition: all 0.3s ease;
+        }
+        .rayon li span {
+            flex: 1;
+        }
+        .hide-checked .rayon li.checked {
+            display: none;
+        }
+        .rayon.empty-rayon {
+            display: none;
+        }
+        .exemple {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 Ma Liste de Courses</h1>
+        
+        <div class="input-section">
+            <h3>📝 Collez votre liste de courses</h3>
+            <textarea id="liste-input" placeholder="Entrez vos articles (un par ligne ou séparés par des virgules)&#10;&#10;Exemple :&#10;Riz complet basmati&#10;Céleri&#10;Œufs&#10;Pain&#10;Pommes&#10;Kiwi&#10;Eau&#10;Jus&#10;Bananes&#10;Yaourt"></textarea>
+            <div class="exemple">💡 Astuce : Un article par ligne ou séparés par des virgules</div>
+            <button class="generate-btn" onclick="genererListe()">✨ Générer ma liste</button>
+        </div>
+        
+        <div class="controls" id="controls">
+            <button class="toggle-btn" onclick="toggleCheckedItems()">
+                <span id="toggle-text">Masquer les articles cochés</span>
+            </button>
+        </div>
+        
+        <div id="liste-container"></div>
+    </div>
+    
+    <script>
+        let hideChecked = false;
+        
+        // Catégories de produits
+        const categories = {
+            'Fruits & Légumes': {
+                emoji: '🥬',
+                mots: ['fruit', 'légume', 'pomme', 'banane', 'orange', 'kiwi', 'fraise', 'poire', 'raisin', 'melon', 'pastèque', 'ananas', 'mangue', 'pêche', 'abricot', 'cerise', 'prune', 'citron', 'lime', 'mandarine', 'clémentine', 'pamplemousse',
+                       'tomate', 'salade', 'laitue', 'carotte', 'poireau', 'oignon', 'ail', 'échalote', 'pomme de terre', 'patate', 'courgette', 'aubergine', 'poivron', 'concombre', 'céleri', 'chou', 'brocoli', 'chou-fleur', 'épinard', 'haricot', 'petit pois', 'maïs', 'champignon', 'avocat', 'artichaut', 'asperge', 'betterave', 'navet', 'radis', 'endive']
+            },
+            'Produits Laitiers & Œufs': {
+                emoji: '🥛',
+                mots: ['lait', 'yaourt', 'yogurt', 'fromage', 'beurre', 'crème', 'œuf', 'oeuf']
+            },
+            'Viandes & Poissons': {
+                emoji: '🥩',
+                mots: ['viande', 'poulet', 'bœuf', 'porc', 'agneau', 'veau', 'canard', 'dinde', 'jambon', 'saucisse', 'steak', 'côtelette', 'rôti', 'bacon', 'lardons',
+                       'poisson', 'saumon', 'thon', 'cabillaud', 'morue', 'truite', 'crevette', 'crabe', 'homard', 'moule', 'huître', 'calamar', 'seiche']
+            },
+            'Épicerie': {
+                emoji: '🛍️',
+                mots: ['riz', 'pâtes', 'pain', 'farine', 'sucre', 'sel', 'poivre', 'huile', 'vinaigre', 'moutarde', 'ketchup', 'mayonnaise', 'sauce', 'épice', 'conserve', 'boîte', 'céréales', 'miel', 'confiture', 'pâte', 'biscuit', 'gâteau', 'chocolat', 'bonbon', 'chips']
+            },
+            'Boissons': {
+                emoji: '🥤',
+                mots: ['eau', 'jus', 'soda', 'cola', 'limonade', 'thé', 'café', 'bière', 'vin', 'champagne', 'alcool', 'sirop', 'smoothie']
+            },
+            'Hygiène & Entretien': {
+                emoji: '🧼',
+                mots: ['savon', 'shampoing', 'dentifrice', 'brosse', 'déodorant', 'papier', 'toilette', 'essuie-tout', 'lessive', 'liquide vaisselle', 'éponge', 'produit', 'nettoyant']
+            }
+        };
+        
+        function categoriserProduit(produit) {
+            const produitLower = produit.toLowerCase();
+            
+            for (const [categorie, data] of Object.entries(categories)) {
+                if (data.mots.some(mot => produitLower.includes(mot))) {
+                    return categorie;
+                }
+            }
+            
+            return 'Autres';
+        }
+        
+        function genererListe() {
+            const input = document.getElementById('liste-input').value.trim();
+            
+            if (!input) {
+                alert('Veuillez entrer votre liste de courses !');
+                return;
+            }
+            
+            // Parser la liste (virgules ou retours à la ligne)
+            const produits = input
+                .split(/[,\n]/)
+                .map(p => p.trim())
+                .filter(p => p.length > 0);
+            
+            // Organiser par catégorie
+            const produitsParCategorie = {};
+            
+            produits.forEach(produit => {
+                const categorie = categoriserProduit(produit);
+                if (!produitsParCategorie[categorie]) {
+                    produitsParCategorie[categorie] = [];
+                }
+                produitsParCategorie[categorie].push(produit);
+            });
+            
+            // Générer le HTML
+            let html = '';
+            const ordreCategories = ['Fruits & Légumes', 'Viandes & Poissons', 'Produits Laitiers & Œufs', 'Épicerie', 'Boissons', 'Hygiène & Entretien', 'Autres'];
+            
+            ordreCategories.forEach(categorie => {
+                if (produitsParCategorie[categorie]) {
+                    const emoji = categories[categorie]?.emoji || '📦';
+                    html += `
+                        <div class="rayon">
+                            <h2>${emoji} ${categorie}</h2>
+                            <ul>
+                    `;
+                    
+                    produitsParCategorie[categorie].forEach(produit => {
+                        html += `<li><input type="checkbox" onclick="toggleItem(this)"><span>${produit}</span></li>`;
+                    });
+                    
+                    html += `
+                            </ul>
+                        </div>
+                    `;
+                }
+            });
+            
+            document.getElementById('liste-container').innerHTML = html;
+            document.getElementById('liste-container').classList.add('visible');
+            document.getElementById('controls').classList.add('visible');
+            
+            // Réinitialiser le mode masquage
+            hideChecked = false;
+            document.querySelector('.container').classList.remove('hide-checked');
+            document.getElementById('toggle-text').textContent = 'Masquer les articles cochés';
+        }
+        
+        function toggleItem(checkbox) {
+            const li = checkbox.parentElement;
+            if (checkbox.checked) {
+                li.classList.add('checked');
+            } else {
+                li.classList.remove('checked');
+            }
+            
+            if (hideChecked) {
+                updateRayonVisibility();
+            }
+        }
+        
+        function updateRayonVisibility() {
+            const rayons = document.querySelectorAll('.rayon');
+            
+            rayons.forEach(rayon => {
+                const items = rayon.querySelectorAll('li');
+                const checkedItems = rayon.querySelectorAll('li.checked');
+                
+                if (items.length > 0 && items.length === checkedItems.length) {
+                    rayon.classList.add('empty-rayon');
+                } else {
+                    rayon.classList.remove('empty-rayon');
+                }
+            });
+        }
+        
+        function toggleCheckedItems() {
+            const container = document.querySelector('.container');
+            const toggleText = document.getElementById('toggle-text');
+            
+            hideChecked = !hideChecked;
+            
+            if (hideChecked) {
+                container.classList.add('hide-checked');
+                toggleText.textContent = 'Afficher les articles cochés';
+                updateRayonVisibility();
+            } else {
+                container.classList.remove('hide-checked');
+                toggleText.textContent = 'Masquer les articles cochés';
+                const rayons = document.querySelectorAll('.rayon');
+                rayons.forEach(rayon => rayon.classList.remove('empty-rayon'));
+            }
+        }
+    </script>
+</body>
+</html>
